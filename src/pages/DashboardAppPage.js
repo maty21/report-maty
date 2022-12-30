@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
+import { useLocation } from 'react-router-dom';
 // @mui
 import { useTheme } from '@mui/material/styles';
 import { Grid, Container, Typography } from '@mui/material';
@@ -22,8 +23,9 @@ import {
 
 export default function DashboardAppPage() {
   const theme = useTheme();
-
+  const location = useLocation()
   return (
+    location.state && location.state.csv &&
     <>
       <Helmet>
         <title> Dashboard | Minimal UI </title>

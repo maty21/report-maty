@@ -1,7 +1,9 @@
 import PropTypes from 'prop-types';
-import { NavLink as RouterLink } from 'react-router-dom';
+import { useState } from 'react'
+import { NavLink as RouterLink, useLocation } from 'react-router-dom';
 // @mui
-import { Box, List, ListItemText } from '@mui/material';
+import { Box, List, ListItemText, ListItemButton, Collapse, } from '@mui/material';
+import { ExpandLess, ExpandMore } from '@mui/icons-material'
 //
 import { StyledNavItem, StyledNavItemIcon } from './styles';
 
@@ -12,6 +14,26 @@ NavSection.propTypes = {
 };
 
 export default function NavSection({ data = [], ...other }) {
+  const location = useLocation()
+  const [open, setOpen] = useState(false);
+  const handleClick = () => {
+    setOpen(!open);
+  };
+  const tenants =
+    location.state && location.state.csv &&
+
+    <Collapse in={open} timeout="auto" >
+
+      <List component="div" disablePadding>
+        {
+          location.state.csv.data.map(t => (
+            <ListItemButton key={t.tenant} item={t}>
+              <ListItemText disableTypography primary={t.tenant} />
+            </ListItemButton>
+          ))}
+      </List>
+    </Collapse>
+
   return (
     <Box {...other}>
       <List disablePadding sx={{ p: 1 }}>
@@ -19,6 +41,11 @@ export default function NavSection({ data = [], ...other }) {
           <NavItem key={item.title} item={item} />
         ))}
       </List>
+      <ListItemButton onClick={handleClick}>
+        <ListItemText primary="Tenants" />
+        {open ? <ExpandMore /> : <ExpandLess />}
+      </ListItemButton>
+      {tenants}
     </Box>
   );
 }
@@ -30,6 +57,7 @@ NavItem.propTypes = {
 };
 
 function NavItem({ item }) {
+
   const { title, path, icon, info } = item;
 
   return (

@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import {useNavigate} from 'react-router-dom';
+import { useState, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import * as PapaParse from 'papaparse'
 // @mui
 import { styled } from '@mui/material/styles';
 import { Input, Slide, Button, IconButton, InputAdornment, ClickAwayListener } from '@mui/material';
@@ -36,15 +37,52 @@ const StyledSearchbar = styled('div')(({ theme }) => ({
 // ----------------------------------------------------------------------
 
 export default function Searchbar() {
+  const inputRef = useRef(null);
   const [open, setOpen] = useState(false);
   const navigate = useNavigate()
+  const location = useLocation();
+  const papaparseOptions = {
+    header: true,
+    dynamicTyping: true,
+    skipEmptyLines: true,
+    transformHeader: header => header.toLowerCase().replace(/\W/g, "_")
+  };
+  const fileEncoding = 'UTF-8';
+  const handleFileChange = (e) => {
+    const reader = new FileReader()
+    if (!e.target.files) {
+      return;
+    }
+    reader.onload = (e) => {
+      const csvData = PapaParse.parse(
+        reader.result,
+        Object.assign(papaparseOptions, {
+
+          encoding: fileEncoding,
+        }),
+      )
+      console.log(csvData);
+      navigate('/dashboard/app', { state: { csv: csvData } })
+      setOpen(false);
+      // 🚩 do the file upload here normally...
+    };
+    reader.readAsText(e.target.files[0], fileEncoding)
+  }
+
+
+
   const handleOpen = () => {
+
     setOpen(!open);
-    navigate('/app',{data:'bla'})
+    console.log(location.state);
+
   };
 
-  const handleClose = () => {
-    setOpen(false);
+  const handleClose = e => {
+    inputRef.current?.click();
+
+
+
   };
 
   return (
@@ -58,7 +96,14 @@ export default function Searchbar() {
 
         <Slide direction="down" in={open} mountOnEnter unmountOnExit>
           <StyledSearchbar>
+            <input
+              type="file"
+              ref={inputRef}
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+            />
             <Input
+
               autoFocus
               fullWidth
               disableUnderline
@@ -70,7 +115,7 @@ export default function Searchbar() {
               }
               sx={{ mr: 1, fontWeight: 'fontWeightBold' }}
             />
-            <Button variant="contained" onClick={handleClose}>
+            <Button variant="contained" onClick={handleClose} >
               Search
             </Button>
           </StyledSearchbar>
